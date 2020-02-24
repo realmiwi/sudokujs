@@ -1,0 +1,455 @@
+<!doctype html>
+
+<html lang="de">
+
+<head>
+    <meta charset="utf-8">
+    <title>Sudoku Solver</title>
+    <link href='https://fonts.googleapis.com/css?family=Lato:300,400,700' rel='stylesheet' type='text/css'>
+    <style>
+        * {
+
+            font-family: "lato", sans-serif;
+            font-weight: 300;
+            color: #fff;
+        }
+
+        html {
+            height: 100%;
+            background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
+            overflow: hidden;
+            font-size: 130%;
+        }
+
+        input {
+            color: #fff;
+            background-color: #00000000;
+            width: 100%;
+            height: 100%;
+            border: none;
+            text-align: center;
+            font-size: 50px;
+        }
+
+        .sudoku {
+            display: table;
+            border: 3px solid #888;
+        }
+
+        .sudokuRow {
+            display: table-row;
+        }
+
+        /*
+        .sudokuRow:nth-child(3n) {
+            background-color: #888;
+            border: 1px solid #3b3b3b;
+        }*/
+
+        .sudokuCell {
+            border: 1px solid #888;
+            display: table-cell;
+            padding: 0;
+            width: 60px;
+            height: 60px;
+        }
+
+        /*
+        .sudokuCell:nth-child(3n) {
+            border-right: 3px solid #888;
+            display: table-cell;
+            padding: 0;
+            width: 60px;
+            height: 60px;
+        }*/
+
+        .sudokuBody {
+            display: table-row-group;
+        }
+
+        .column {
+            float: left;
+
+        }
+
+        .row:after {
+            content: "";
+            display: table;
+            clear: both;
+        }
+
+        a {
+            background-color: #000;
+            text-decoration: none;
+            padding: 3px 30px;
+        }
+        p {
+            background-color: #000;
+            padding: 3px 30px;
+            color:red;
+        }
+    </style>
+</head>
+
+<body>
+    <h1 style="text-align: center;">Sudoku Solver</h1>
+    <script src="solver.js"></script>
+
+    <!--<input type="number" placeholder="" step="1" min="1" max="9">-->
+
+    <script>
+        var grid = [
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0]
+        ];
+
+        function getInputValues() {
+            for (let i = 0; i < 9; i++) {
+                for (let j = 0; j < 9; j++) {
+                    let r = document.getElementById("c" + j + "" + i).value;
+                    if (r > 0 && r < 10) {
+                        grid[j][i] = r;
+                    } else {
+                        grid[j][i] = 0;
+                    }
+
+                }
+            }
+        }
+
+        function markFilled() {
+            for (let i = 0; i < 9; i++) {
+                for (let j = 0; j < 9; j++) {
+                    let obj = document.getElementById("c" + j + "" + i);
+                    if (obj.value > 0) {
+                        obj.style.background = "#888";
+                    }
+                }
+            }
+        }
+
+        function solveThis() {
+            getInputValues();
+            markFilled();
+            if (solve(grid, 0, 0)) {
+                for (let i = 0; i < 9; i++) {
+                    for (let j = 0; j < 9; j++) {
+                        document.getElementById("c" + j + "" + i).value = grid[j][i];
+                    }
+                }
+            } else {
+                document.getElementById("noSolution").style.visibility =  "visible";
+            }
+        }
+
+        function example() {
+            grid = [
+                [0, 7, 0, 8, 0, 2, 0, 6, 1],
+                [0, 5, 0, 0, 0, 4, 7, 2, 0],
+                [0, 0, 0, 0, 6, 0, 0, 0, 8],
+
+                [0, 4, 0, 6, 0, 5, 8, 3, 2],
+                [8, 2, 0, 0, 0, 0, 0, 0, 0],
+                [3, 0, 0, 2, 4, 0, 0, 7, 0],
+
+                [0, 0, 0, 0, 0, 0, 0, 8, 4],
+                [0, 0, 4, 5, 0, 6, 0, 0, 7],
+                [2, 0, 7, 0, 0, 3, 6, 5, 0]
+            ];
+
+            for (let i = 0; i < 9; i++) {
+                for (let j = 0; j < 9; j++) {
+                    if (grid[j][i] == 0) { continue; }
+                    document.getElementById("c" + j + "" + i).value = grid[j][i];
+                }
+            }
+        }
+
+    </script>
+
+
+
+    <div class="row">
+        <div class="column">
+            <div class="sudoku">
+                <div class="sudokuBody">
+                    <div class="sudokuRow">
+                        <div class="sudokuCell"><input type="number" placeholder="" id="c00" step="1" min="1" max="9">
+                        </div>
+                        <div class="sudokuCell"><input type="number" placeholder="" id="c01" step="1" min="1" max="9">
+                        </div>
+                        <div class="sudokuCell"><input type="number" placeholder="" id="c02" step="1" min="1" max="9">
+                        </div>
+                    </div>
+                    <div class="sudokuRow">
+                        <div class="sudokuCell"><input type="number" placeholder="" id="c10" step="1" min="1" max="9">
+                        </div>
+                        <div class="sudokuCell"><input type="number" placeholder="" id="c11" step="1" min="1" max="9">
+                        </div>
+                        <div class="sudokuCell"><input type="number" placeholder="" id="c12" step="1" min="1" max="9">
+                        </div>
+                    </div>
+                    <div class="sudokuRow">
+                        <div class="sudokuCell"><input type="number" placeholder="" id="c20" step="1" min="1" max="9">
+                        </div>
+                        <div class="sudokuCell"><input type="number" placeholder="" id="c21" step="1" min="1" max="9">
+                        </div>
+                        <div class="sudokuCell"><input type="number" placeholder="" id="c22" step="1" min="1" max="9">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sudoku">
+                <div class="sudokuBody">
+                    <div class="sudokuRow">
+                        <div class="sudokuCell"><input type="number" placeholder="" id="c30" step="1" min="1" max="9">
+                        </div>
+                        <div class="sudokuCell"><input type="number" placeholder="" id="c31" step="1" min="1" max="9">
+                        </div>
+                        <div class="sudokuCell"><input type="number" placeholder="" id="c32" step="1" min="1" max="9">
+                        </div>
+                    </div>
+                    <div class="sudokuRow">
+                        <div class="sudokuCell"><input type="number" placeholder="" id="c40" step="1" min="1" max="9">
+                        </div>
+                        <div class="sudokuCell"><input type="number" placeholder="" id="c41" step="1" min="1" max="9">
+                        </div>
+                        <div class="sudokuCell"><input type="number" placeholder="" id="c42" step="1" min="1" max="9">
+                        </div>
+                    </div>
+                    <div class="sudokuRow">
+                        <div class="sudokuCell"><input type="number" placeholder="" id="c50" step="1" min="1" max="9">
+                        </div>
+                        <div class="sudokuCell"><input type="number" placeholder="" id="c51" step="1" min="1" max="9">
+                        </div>
+                        <div class="sudokuCell"><input type="number" placeholder="" id="c52" step="1" min="1" max="9">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sudoku">
+                <div class="sudokuBody">
+                    <div class="sudokuRow">
+                        <div class="sudokuCell"><input type="number" placeholder="" id="c60" step="1" min="1" max="9">
+                        </div>
+                        <div class="sudokuCell"><input type="number" placeholder="" id="c61" step="1" min="1" max="9">
+                        </div>
+                        <div class="sudokuCell"><input type="number" placeholder="" id="c62" step="1" min="1" max="9">
+                        </div>
+                    </div>
+                    <div class="sudokuRow">
+                        <div class="sudokuCell"><input type="number" placeholder="" id="c70" step="1" min="1" max="9">
+                        </div>
+                        <div class="sudokuCell"><input type="number" placeholder="" id="c71" step="1" min="1" max="9">
+                        </div>
+                        <div class="sudokuCell"><input type="number" placeholder="" id="c72" step="1" min="1" max="9">
+                        </div>
+                    </div>
+                    <div class="sudokuRow">
+                        <div class="sudokuCell"><input type="number" placeholder="" id="c80" step="1" min="1" max="9">
+                        </div>
+                        <div class="sudokuCell"><input type="number" placeholder="" id="c81" step="1" min="1" max="9">
+                        </div>
+                        <div class="sudokuCell"><input type="number" placeholder="" id="c82" step="1" min="1" max="9">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="column">
+            <div class="sudoku">
+                <div class="sudokuBody">
+                    <div class="sudokuRow">
+                        <div class="sudokuCell"><input type="number" placeholder="" id="c03" step="1" min="1" max="9">
+                        </div>
+                        <div class="sudokuCell"><input type="number" placeholder="" id="c04" step="1" min="1" max="9">
+                        </div>
+                        <div class="sudokuCell"><input type="number" placeholder="" id="c05" step="1" min="1" max="9">
+                        </div>
+                    </div>
+                    <div class="sudokuRow">
+                        <div class="sudokuCell"><input type="number" placeholder="" id="c13" step="1" min="1" max="9">
+                        </div>
+                        <div class="sudokuCell"><input type="number" placeholder="" id="c14" step="1" min="1" max="9">
+                        </div>
+                        <div class="sudokuCell"><input type="number" placeholder="" id="c15" step="1" min="1" max="9">
+                        </div>
+                    </div>
+                    <div class="sudokuRow">
+                        <div class="sudokuCell"><input type="number" placeholder="" id="c23" step="1" min="1" max="9">
+                        </div>
+                        <div class="sudokuCell"><input type="number" placeholder="" id="c24" step="1" min="1" max="9">
+                        </div>
+                        <div class="sudokuCell"><input type="number" placeholder="" id="c25" step="1" min="1" max="9">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sudoku">
+                <div class="sudokuBody">
+                    <div class="sudokuRow">
+                        <div class="sudokuCell"><input type="number" placeholder="" id="c33" step="1" min="1" max="9">
+                        </div>
+                        <div class="sudokuCell"><input type="number" placeholder="" id="c34" step="1" min="1" max="9">
+                        </div>
+                        <div class="sudokuCell"><input type="number" placeholder="" id="c35" step="1" min="1" max="9">
+                        </div>
+                    </div>
+                    <div class="sudokuRow">
+                        <div class="sudokuCell"><input type="number" placeholder="" id="c43" step="1" min="1" max="9">
+                        </div>
+                        <div class="sudokuCell"><input type="number" placeholder="" id="c44" step="1" min="1" max="9">
+                        </div>
+                        <div class="sudokuCell"><input type="number" placeholder="" id="c45" step="1" min="1" max="9">
+                        </div>
+                    </div>
+                    <div class="sudokuRow">
+                        <div class="sudokuCell"><input type="number" placeholder="" id="c53" step="1" min="1" max="9">
+                        </div>
+                        <div class="sudokuCell"><input type="number" placeholder="" id="c54" step="1" min="1" max="9">
+                        </div>
+                        <div class="sudokuCell"><input type="number" placeholder="" id="c55" step="1" min="1" max="9">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sudoku">
+                <div class="sudokuBody">
+                    <div class="sudokuRow">
+                        <div class="sudokuCell"><input type="number" placeholder="" id="c63" step="1" min="1" max="9">
+                        </div>
+                        <div class="sudokuCell"><input type="number" placeholder="" id="c64" step="1" min="1" max="9">
+                        </div>
+                        <div class="sudokuCell"><input type="number" placeholder="" id="c65" step="1" min="1" max="9">
+                        </div>
+                    </div>
+                    <div class="sudokuRow">
+                        <div class="sudokuCell"><input type="number" placeholder="" id="c73" step="1" min="1" max="9">
+                        </div>
+                        <div class="sudokuCell"><input type="number" placeholder="" id="c74" step="1" min="1" max="9">
+                        </div>
+                        <div class="sudokuCell"><input type="number" placeholder="" id="c75" step="1" min="1" max="9">
+                        </div>
+                    </div>
+                    <div class="sudokuRow">
+                        <div class="sudokuCell"><input type="number" placeholder="" id="c83" step="1" min="1" max="9">
+                        </div>
+                        <div class="sudokuCell"><input type="number" placeholder="" id="c84" step="1" min="1" max="9">
+                        </div>
+                        <div class="sudokuCell"><input type="number" placeholder="" id="c85" step="1" min="1" max="9">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="column">
+            <div class="sudoku">
+                <div class="sudokuBody">
+                    <div class="sudokuRow">
+                        <div class="sudokuCell"><input type="number" placeholder="" id="c06" step="1" min="1" max="9">
+                        </div>
+                        <div class="sudokuCell"><input type="number" placeholder="" id="c07" step="1" min="1" max="9">
+                        </div>
+                        <div class="sudokuCell"><input type="number" placeholder="" id="c08" step="1" min="1" max="9">
+                        </div>
+                    </div>
+                    <div class="sudokuRow">
+                        <div class="sudokuCell"><input type="number" placeholder="" id="c16" step="1" min="1" max="9">
+                        </div>
+                        <div class="sudokuCell"><input type="number" placeholder="" id="c17" step="1" min="1" max="9">
+                        </div>
+                        <div class="sudokuCell"><input type="number" placeholder="" id="c18" step="1" min="1" max="9">
+                        </div>
+                    </div>
+                    <div class="sudokuRow">
+                        <div class="sudokuCell"><input type="number" placeholder="" id="c26" step="1" min="1" max="9">
+                        </div>
+                        <div class="sudokuCell"><input type="number" placeholder="" id="c27" step="1" min="1" max="9">
+                        </div>
+                        <div class="sudokuCell"><input type="number" placeholder="" id="c28" step="1" min="1" max="9">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sudoku">
+                <div class="sudokuBody">
+                    <div class="sudokuRow">
+                        <div class="sudokuCell"><input type="number" placeholder="" id="c36" step="1" min="1" max="9">
+                        </div>
+                        <div class="sudokuCell"><input type="number" placeholder="" id="c37" step="1" min="1" max="9">
+                        </div>
+                        <div class="sudokuCell"><input type="number" placeholder="" id="c38" step="1" min="1" max="9">
+                        </div>
+                    </div>
+                    <div class="sudokuRow">
+                        <div class="sudokuCell"><input type="number" placeholder="" id="c46" step="1" min="1" max="9">
+                        </div>
+                        <div class="sudokuCell"><input type="number" placeholder="" id="c47" step="1" min="1" max="9">
+                        </div>
+                        <div class="sudokuCell"><input type="number" placeholder="" id="c48" step="1" min="1" max="9">
+                        </div>
+                    </div>
+                    <div class="sudokuRow">
+                        <div class="sudokuCell"><input type="number" placeholder="" id="c56" step="1" min="1" max="9">
+                        </div>
+                        <div class="sudokuCell"><input type="number" placeholder="" id="c57" step="1" min="1" max="9">
+                        </div>
+                        <div class="sudokuCell"><input type="number" placeholder="" id="c58" step="1" min="1" max="9">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sudoku">
+                <div class="sudokuBody">
+                    <div class="sudokuRow">
+                        <div class="sudokuCell"><input type="number" placeholder="" id="c66" step="1" min="1" max="9">
+                        </div>
+                        <div class="sudokuCell"><input type="number" placeholder="" id="c67" step="1" min="1" max="9">
+                        </div>
+                        <div class="sudokuCell"><input type="number" placeholder="" id="c68" step="1" min="1" max="9">
+                        </div>
+                    </div>
+                    <div class="sudokuRow">
+                        <div class="sudokuCell"><input type="number" placeholder="" id="c76" step="1" min="1" max="9">
+                        </div>
+                        <div class="sudokuCell"><input type="number" placeholder="" id="c77" step="1" min="1" max="9">
+                        </div>
+                        <div class="sudokuCell"><input type="number" placeholder="" id="c78" step="1" min="1" max="9">
+                        </div>
+                    </div>
+                    <div class="sudokuRow">
+                        <div class="sudokuCell"><input type="number" placeholder="" id="c86" step="1" min="1" max="9">
+                        </div>
+                        <div class="sudokuCell"><input type="number" placeholder="" id="c87" step="1" min="1" max="9">
+                        </div>
+                        <div class="sudokuCell"><input type="number" placeholder="" id="c88" step="1" min="1" max="9">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="column" style="padding-left: 15px;">
+            <a href="#" onclick="solveThis()">Solve</a>
+            <a href="#" onclick="window.location=''">Clear</a>
+            <a href="#" onclick="example()">Example values</a>
+            <p id="noSolution" style="visibility: hidden;">No solution available for this Sudoku :-(</p>
+        </div>
+    </div>
+</body>
+
+</html>
